@@ -4,45 +4,89 @@ services:
 
   adminer:
     depends_on:
-    - postgres
+      - postgres
     image: adminer:${ADMINER_IMAGE_TAG}
-    ports:
-      - "8081:8080"
     restart: unless-stopped
+
+  cadvisor:
+    command:
+      - -url_base_prefix=/cadvisor
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:${CADVISOR_IMAGE_TAG}
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  grafana:
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SERVER_DOMAIN=localhost
+      - GF_SERVER_ROOT_URL=https://localhost:${NGINX_HOST_PORT}/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    image: grafana/grafana:${GRAFANA_IMAGE_TAG}
+    restart: unless-stopped
+    volumes:
+      - grafana_data:/var/lib/grafana
 
   guacd:
     environment:
-    - GUACD_LOG_LEVEL
+      - GUACD_LOG_LEVEL
     hostname: guacd
     image: guacamole/guacd:${GUACD_IMAGE_TAG}
     restart: unless-stopped
 
   guacamole:
     depends_on:
-    - guacd
-    - postgres
+      - guacd
+      - postgres
     environment:
-    - GUACAMOLE_HOME=/etc/guacamole
-    - GUACD_HOSTNAME
-    - GUACD_PORT
-    - POSTGRES_HOSTNAME
-    - POSTGRES_PORT
-    - POSTGRES_DATABASE=${POSTGRES_DB}
-    - POSTGRES_USER
-    - POSTGRES_PASSWORD
+      - GUACAMOLE_HOME=/etc/guacamole
+      - GUACD_HOSTNAME=guacd
+      - GUACD_PORT=4822
+      - POSTGRES_HOSTNAME=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=${POSTGRES_DB}
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
     hostname: guacamole
     image: guacamole/guacamole:${GUACAMOLE_IMAGE_TAG}
-    ports:
-    - "8080:8080"
     restart: unless-stopped
     volumes:
       - "guacamole_conf:/etc/guacamole"
 
-  # nginx:
-  #   image: nginx:${NGINX_IMAGE_TAG}
-  #   restart: unless-stopped
-  #   # ports:
-  #   # - "${NGINX_HOST_PORT}:80"
+  nginx:
+    depends_on:
+      - adminer
+      - cadvisor
+      - grafana
+      - guacamole
+      - node_exporter
+      - prometheus
+    extra_hosts:
+      - "node_exporter:${NODE_EXPORTER_HOST}"
+    image: nginx:${NGINX_IMAGE_TAG}
+    restart: unless-stopped
+    ports:
+      - "${NGINX_HOST_PORT}:443"
+    volumes:
+      - ./cfssl-cert/server.pem:/etc/ssl/certs/server.pem:ro
+      - ./cfssl-cert/server-key.pem:/etc/ssl/private/server-key.pem:ro
+      - ./nginx-conf:/etc/nginx/conf.d
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:${NODE_EXPORTER_IMAGE_TAG}
+    container_name: node_exporter
+    command:
+      - --path.rootfs=/host
+      - --web.telemetry-path=/node-exporter/metrics
+    network_mode: host
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - /:/host:ro,rslave
 
   postgres:
     environment:
@@ -53,10 +97,31 @@ services:
     restart: unless-stopped
     user: postgres
     volumes:
-      - "${POSTGRES_DATA_HOST_DIR}:/var/lib/postgresql/data"
-      - "${POSTGRES_INITDB_HOST_DIR}:/docker-entrypoint-initdb.d"
+      - postgres_data:/var/lib/postgresql/data"
+      - postgres_initdb:/docker-entrypoint-initdb.d"
+
+  prometheus:
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+      - --web.external-url=/prometheus/
+    depends_on:
+      - cadvisor
+      - node_exporter
+    extra_hosts:
+      - "node_exporter:${NODE_EXPORTER_HOST}"
+    image: prom/prometheus:${PROMETHEUS_IMAGE_TAG}
+    restart: unless-stopped    
+    volumes:
+      - ./prometheus-conf/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
 
 volumes:
+  grafana_data:
+  grafana_log:
   guacamole_conf:
   postgres_data:
   postgres_initdb:
+  prometheus_data:

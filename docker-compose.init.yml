@@ -1,0 +1,34 @@
+version: "3.7"
+
+services:
+
+  cfssl:
+    command:
+      - bash
+      - -c
+      - |
+          set -euxo pipefail
+          # cfssl print-defaults config > ca-config.json
+          # cfssl print-defaults csr > ca-csr.json
+          cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+          cfssl gencert -ca=ca.pem -ca-key=ca-key.pem --config=ca-config.json -profile=server server-csr.json | cfssljson -bare server
+    entrypoint: []
+    image: cfssl/cfssl:${CFSSL_IMAGE_TAG}
+    volumes:
+      - ./cfssl-cert:/cfssl-cert
+    working_dir: /cfssl-cert
+
+  guacamole:
+    command:
+      - sh
+      - -c
+      - |
+          set -eux
+          /opt/guacamole/bin/initdb.sh --postgres > initdb.sql
+    image: guacamole/guacamole:${GUACAMOLE_IMAGE_TAG}
+    volumes:
+      - postgres_initdb:/docker-entrypoint-initdb.d
+    working_dir: /docker-entrypoint-initdb.d
+
+volumes:
+  postgres_initdb:

@@ -1,1 +1,4 @@
-postgres-data
+cfssl-cert/*
+!cfssl-cert/ca-config.json
+!cfssl-cert/ca-csr.json
+!cfssl-cert/server-csr.json
