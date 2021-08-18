@@ -55,7 +55,7 @@ services:
     image: guacamole/guacamole:${GUACAMOLE_IMAGE_TAG}
     restart: unless-stopped
     volumes:
-      - "guacamole_conf:/etc/guacamole"
+      - guacamole_conf:/etc/guacamole
 
   nginx:
     depends_on:
@@ -66,11 +66,11 @@ services:
       - node_exporter
       - prometheus
     extra_hosts:
-      - "node_exporter:${NODE_EXPORTER_HOST}"
+      - node_exporter:${NODE_EXPORTER_HOST}
     image: nginx:${NGINX_IMAGE_TAG}
     restart: unless-stopped
     ports:
-      - "${NGINX_HOST_PORT}:443"
+      - ${NGINX_HOST_PORT}:443
     volumes:
       - ./cfssl-cert/server.pem:/etc/ssl/certs/server.pem:ro
       - ./cfssl-cert/server-key.pem:/etc/ssl/private/server-key.pem:ro
@@ -97,8 +97,8 @@ services:
     restart: unless-stopped
     user: postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data"
-      - postgres_initdb:/docker-entrypoint-initdb.d"
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_initdb:/docker-entrypoint-initdb.d
 
   prometheus:
     command:
@@ -111,7 +111,7 @@ services:
       - cadvisor
       - node_exporter
     extra_hosts:
-      - "node_exporter:${NODE_EXPORTER_HOST}"
+      - node_exporter:${NODE_EXPORTER_HOST}
     image: prom/prometheus:${PROMETHEUS_IMAGE_TAG}
     restart: unless-stopped    
     volumes:
