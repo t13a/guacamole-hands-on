@@ -13,6 +13,7 @@ services:
       - -url_base_prefix=/cadvisor
     container_name: cadvisor
     image: gcr.io/cadvisor/cadvisor:${CADVISOR_IMAGE_TAG}
+    restart: unless-stopped
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
