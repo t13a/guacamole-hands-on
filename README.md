@@ -38,6 +38,12 @@ Then, you'll able to access following URLs.
 - `https://localhost:5670/node-exporter/`: Node Exporter
 - `https://localhost:5670/prometheus/`: Prometheus
 
+## Screenshots
+
+![Grafana Container](img/screenshot-grafana-node.png)
+
+![Grafana Container](img/screenshot-grafana-container.png)
+
 ## References
 
 - https://github.com/prometheus/node_exporter
