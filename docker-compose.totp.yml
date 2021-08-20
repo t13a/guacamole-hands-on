@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+
+  guacamole:
+    environment:
+      - TOTP_ENABLED=true
+      - TOTP_ISSUER=${TOTP_ISSUER:-}
+      - TOTP_DIGITS=${TOTP_DIGITS:-}
+      - TOTP_PERIOD=${TOTP_PERIOD:-}
+      - TOTP_MODE=${TOTP_MODE:-}

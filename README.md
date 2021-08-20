@@ -12,25 +12,19 @@
 
 - Docker
 - Docker Compose
+- GNU Make
 
 ## Getting started
 
-Generate certificates and SQL.
+The following command executes issuing the self-sigined certificate, generating initialization SQL, and starting the containers all at once. Please investigate the contents of the `Makefile` for details.
 
-```bash
-$ docker-compose -f docker-compose.init.yml run --rm cfssl
-$ docker-compose -f docker-compose.init.yml run --rm guacamole
 ```
-
-Start all services.
-
-```bash
-$ docker-compose up
+$ make up
 ```
 
 Then, you'll able to access following URLs.
 
-- `https://localhost:5670/`: Apache Guacamole (redirection)
+- `https://localhost:5670/`: Redirect to `/guacamole/`
 - `https://localhost:5670/adminer/`: Adminer
 - `https://localhost:5670/cadvisor/`: cAdvisor
 - `https://localhost:5670/grafana/`: Grafana
@@ -38,11 +32,25 @@ Then, you'll able to access following URLs.
 - `https://localhost:5670/node-exporter/`: Node Exporter
 - `https://localhost:5670/prometheus/`: Prometheus
 
+When you have finished trying out the services, run the following command.
+
+```
+$ make down
+```
+
 ## Screenshots
 
 ![Grafana Container](img/screenshot-grafana-node.png)
 
 ![Grafana Container](img/screenshot-grafana-container.png)
+
+## Tips & Tricks
+
+### Enable TOTP
+
+```
+$ make up/totp
+```
 
 ## References
 
