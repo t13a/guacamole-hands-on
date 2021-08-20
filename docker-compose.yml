@@ -77,9 +77,9 @@ services:
     ports:
       - ${NGINX_HOST_PORT}:443
     volumes:
-      - ./cfssl-cert/server.pem:/etc/ssl/certs/server.pem:ro
-      - ./cfssl-cert/server-key.pem:/etc/ssl/private/server-key.pem:ro
       - ./nginx-conf:/etc/nginx/conf.d
+      - nginx_cert:/etc/ssl/certs/nginx:ro
+      - nginx_key:/etc/ssl/private/nginx:ro
 
   node_exporter:
     image: quay.io/prometheus/node-exporter:${NODE_EXPORTER_IMAGE_TAG}
@@ -127,6 +127,8 @@ volumes:
   grafana_data:
   grafana_log:
   guacamole_conf:
+  nginx_cert:
+  nginx_key:
   postgres_data:
   postgres_initdb:
   prometheus_data:
