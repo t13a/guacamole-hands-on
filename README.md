@@ -4,7 +4,7 @@
 ## Features
 
 - Standalone **[Apache Guacamole](https://guacamole.apache.org/)** server
-- Built-in reverse proxy using TLS 1.3 ([Nginx](https://nginx.org/) & [cfssl](https://cfssl.org/))
+- Built-in reverse proxy using TLS ([Nginx](https://nginx.org/) & [cfssl](https://cfssl.org/))
 - Built-in monitoring ([Grafana](https://grafana.com/) & [Prometheus](https://prometheus.io/))
 - Built-in database management ([Adminer](https://www.adminer.org/))
 
